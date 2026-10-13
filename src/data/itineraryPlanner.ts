@@ -73,7 +73,7 @@ function uncertaintyForAttraction(attraction: Attraction): string | null {
 
 export function generateItinerary(
   attractions: Attraction[],
-  _startingLocation: string,
+  startingLocation: string,
   timeLimit: string,
   interests: string[]
 ): ItineraryResult {
@@ -152,7 +152,7 @@ export function generateItinerary(
   if (suggestionCount > 0) {
     parts.push(`${suggestionCount} additional suggestion(s) that may not fit the time budget`);
   }
-  parts.push(`starting from Gwalior Railway Station.`);
+  parts.push(`starting from ${startingLocation}.`);
   const summary = parts.join(', ');
 
   const unverifiedTimingsCount = stops.filter((s) => s.uncertainty && s.uncertainty.includes('Opening hours')).length;
@@ -160,7 +160,7 @@ export function generateItinerary(
     warnings.push(`${unverifiedTimingsCount} attraction(s) have unverified opening hours. Please confirm before visiting.`);
   }
 
-  warnings.push('Travel times from Gwalior Railway Station are not calculated. Use the Google Maps directions links to estimate travel time. Itinerary feasibility has not been verified against actual travel times.');
+  warnings.push(`Travel times from ${startingLocation} are not calculated. Use the Google Maps directions links to estimate travel time. Itinerary feasibility has not been verified against actual travel times.`);
 
   return { stops, totalTimeLabel, summary, warnings, confirmedCount, suggestionCount };
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Clock, Sparkles, Search, Navigation, AlertTriangle, AlertCircle, Clock3, ChevronRight, Route, MapPin, CheckCircle2, Info } from 'lucide-react';
 import type { Attraction, ItineraryResult } from '@/data/attractionTypes';
-import { buildDirectionsUrl, ORIGIN_LOCATION } from '@/data/attractionTypes';
+import { buildDirectionsUrl, DEFAULT_ORIGIN, STARTING_LOCATIONS } from '@/data/attractionTypes';
 import AttractionImage from '@/components/AttractionImage';
 
 const timeOptions = ['4 hours', '6 hours', '8 hours'];
@@ -25,12 +25,13 @@ const subcategoryNames: Record<string, string> = {
 };
 
 interface TripDiscoveryProps {
-  onSuggest: (time: string, interests: string[]) => void;
+  onSuggest: (location: string, time: string, interests: string[]) => void;
   itinerary: ItineraryResult | null;
   onViewDetails: (attraction: Attraction) => void;
 }
 
 export default function TripDiscovery({ onSuggest, itinerary, onViewDetails }: TripDiscoveryProps) {
+  const [location, setLocation] = useState(DEFAULT_ORIGIN);
   const [time, setTime] = useState(timeOptions[0]);
   const [interests, setInterests] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -42,7 +43,7 @@ export default function TripDiscovery({ onSuggest, itinerary, onViewDetails }: T
 
   const handleFind = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onSuggest(time, interests);
+    onSuggest(location, time, interests);
     setSubmitted(true);
   };
 
@@ -55,16 +56,15 @@ export default function TripDiscovery({ onSuggest, itinerary, onViewDetails }: T
         <div className="text-center mb-12">
           <p className="text-gold text-sm font-semibold tracking-widest uppercase mb-2">Trip Discovery</p>
           <h2 className="text-[#1b2a4a] text-3xl md:text-4xl font-bold mb-4">Plan Your Gwalior Experience</h2>
-          <p className="text-[#1b2a4a]/60 text-base md:text-lg max-w-2xl mx-auto">Choose your available time and interests to get recommendations for Gwalior's attractions. All directions start from {ORIGIN_LOCATION}.</p>
+          <p className="text-[#1b2a4a]/60 text-base md:text-lg max-w-2xl mx-auto">Choose your starting point, available time, and interests to get recommendations for Gwalior's attractions.</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-6 md:p-10 border border-sandstone/20">
           <form onSubmit={handleFind} className="space-y-8">
             <div>
-              <label className="flex items-center gap-2 text-[#1b2a4a] font-semibold mb-3"><MapPin size={18} className="text-gold" /> Starting Point</label>
-              <div className="flex items-center gap-2 text-sm text-[#1b2a4a]/60 bg-cream border border-sandstone/25 rounded-xl px-4 py-3">
-                <MapPin size={16} className="text-gold" />
-                <span>{ORIGIN_LOCATION} <span className="text-[#1b2a4a]/40">(fixed)</span></span>
+              <label className="flex items-center gap-2 text-[#1b2a4a] font-semibold mb-3"><MapPin size={18} className="text-gold" /> Starting Location</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {STARTING_LOCATIONS.map((item) => <button key={item} type="button" onClick={() => { setLocation(item); setSubmitted(false); }} className={`px-4 py-3 rounded-xl text-sm font-medium border-2 transition ${location === item ? 'bg-[#1b2a4a] text-cream border-[#1b2a4a]' : 'bg-white text-[#1b2a4a] border-sandstone/30 hover:border-[#1b2a4a]/50'}`}>{item}</button>)}
               </div>
             </div>
             <div>
@@ -96,7 +96,7 @@ export default function TripDiscovery({ onSuggest, itinerary, onViewDetails }: T
                 </div>
                 <p className="text-[#1b2a4a] font-semibold text-sm">{itinerary.summary}</p>
                 <p className="text-[#1b2a4a]/60 text-sm mt-1">
-                  {time} · {interests.length ? interests.join(', ') : 'All interests'}
+                  {location} · {time} · {interests.length ? interests.join(', ') : 'All interests'}
                 </p>
                 {itinerary.confirmedCount > 0 && (
                   <p className="text-[#1b2a4a]/70 text-sm mt-2">
@@ -194,8 +194,8 @@ export default function TripDiscovery({ onSuggest, itinerary, onViewDetails }: T
             <button onClick={() => onViewDetails(stop.attraction)} className="inline-flex items-center gap-1 text-xs font-semibold text-[#1b2a4a] bg-white border border-sandstone/30 rounded-lg px-3 py-1.5 hover:border-gold/50 transition">
               View Details <ChevronRight size={13} />
             </button>
-            <a href={buildDirectionsUrl(stop.attraction)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-cream bg-[#1b2a4a] rounded-lg px-3 py-1.5 hover:bg-[#243760] transition">
-              <Navigation size={13} /> Directions from {ORIGIN_LOCATION}
+            <a href={buildDirectionsUrl(stop.attraction, location)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-cream bg-[#1b2a4a] rounded-lg px-3 py-1.5 hover:bg-[#243760] transition">
+              <Navigation size={13} /> Directions from {location}
             </a>
           </div>
         </div>

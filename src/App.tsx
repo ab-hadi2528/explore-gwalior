@@ -10,7 +10,7 @@ import AttractionDetailsModal from '@/components/AttractionDetailsModal';
 import ReportIncorrectInformation from '@/components/ReportIncorrectInformation';
 import { attractions as attractionRecords } from '@/data/attractions.js';
 import { generateItinerary } from '@/data/itineraryPlanner';
-import { ORIGIN_LOCATION } from '@/data/attractionTypes';
+import { DEFAULT_ORIGIN } from '@/data/attractionTypes';
 import type { Attraction, ItineraryResult } from '@/data/attractionTypes';
 
 const attractions = attractionRecords as Attraction[];
@@ -28,8 +28,8 @@ function App() {
     return categoryMatches && subcategoryMatches;
   }), [category, subcategory]);
 
-  const handleSuggestion = (time: string, interests: string[]) => {
-    const result = generateItinerary(attractions, ORIGIN_LOCATION, time, interests);
+  const handleSuggestion = (location: string, time: string, interests: string[]) => {
+    const result = generateItinerary(attractions, location, time, interests);
     setItinerary(result);
 
     const interestCats = new Set<string>();

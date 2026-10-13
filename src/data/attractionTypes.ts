@@ -64,10 +64,16 @@ export interface ItineraryResult {
   suggestionCount: number;
 }
 
-export const ORIGIN_LOCATION = 'Gwalior Railway Station';
+export const DEFAULT_ORIGIN = 'Gwalior Railway Station';
 
-export function buildDirectionsUrl(attraction: Attraction): string {
+export const STARTING_LOCATIONS = [
+  'Gwalior Railway Station',
+  'Gwalior Fort',
+  'Jai Vilas Palace',
+];
+
+export function buildDirectionsUrl(attraction: Attraction, origin: string = DEFAULT_ORIGIN): string {
   const dest = encodeURIComponent(attraction.name + ' Gwalior');
-  const origin = encodeURIComponent(ORIGIN_LOCATION);
-  return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}`;
+  const originEnc = encodeURIComponent(origin);
+  return `https://www.google.com/maps/dir/?api=1&origin=${originEnc}&destination=${dest}`;
 }

@@ -1,7 +1,7 @@
 import { X, MapPin, Clock, Ticket, Globe, UtensilsCrossed, Building, FileText, CheckCircle2, AlertCircle, AlertTriangle, ExternalLink, Navigation, Car, Hotel, Clock3, Sparkles, Calendar, Info } from 'lucide-react';
 import AttractionImage from '@/components/AttractionImage';
 import type { Attraction } from '@/data/attractionTypes';
-import { buildDirectionsUrl, ORIGIN_LOCATION } from '@/data/attractionTypes';
+import { buildDirectionsUrl, DEFAULT_ORIGIN } from '@/data/attractionTypes';
 
 interface Props { attraction: Attraction | null; onClose: () => void; }
 
@@ -73,7 +73,7 @@ export default function AttractionDetailsModal({ attraction, onClose }: Props) {
           <h3 className="text-[#1b2a4a] font-bold text-sm uppercase tracking-wide mb-3">Maps & Directions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <MapButton href={attraction.mapsSearchUrl} icon={<MapPin size={16} />} label="Open in Google Maps" variant="primary" />
-            <MapButton href={buildDirectionsUrl(attraction)} icon={<Navigation size={16} />} label={`Directions from ${ORIGIN_LOCATION}`} variant="primary" />
+            <MapButton href={buildDirectionsUrl(attraction)} icon={<Navigation size={16} />} label={`Directions from ${DEFAULT_ORIGIN}`} variant="primary" />
             <MapButton href={attraction.nearbyRestaurants.url} icon={<UtensilsCrossed size={16} />} label="Find Nearby Restaurants" variant="secondary" />
             <MapButton href={attraction.nearbyHotels.url} icon={<Hotel size={16} />} label="Find Nearby Hotels" variant="secondary" />
             <MapButton href={attraction.parkingUrl} icon={<Car size={16} />} label="Find Parking" variant="secondary" />
