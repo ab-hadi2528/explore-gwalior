@@ -5,6 +5,7 @@ const navLinks = [
   { label: 'Explore', target: 'explore' },
   { label: 'Historical Heritage', target: 'historical-heritage' },
   { label: 'Musical Heritage', target: 'musical-heritage' },
+  { label: 'Scenic Places', target: 'spiritual-scenic' },
   { label: 'About Us', target: 'about' },
 ];
 

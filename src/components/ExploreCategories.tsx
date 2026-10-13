@@ -1,10 +1,13 @@
 import { ArrowRight } from 'lucide-react';
 import { categories } from '@/data/categories';
 
-export default function ExploreCategories() {
-  const handleExplore = () => {
-    const el = document.getElementById('attractions');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+interface ExploreCategoriesProps {
+  onSelectCategory: (categoryId: string) => void;
+}
+
+export default function ExploreCategories({ onSelectCategory }: ExploreCategoriesProps) {
+  const handleExplore = (categoryId: string) => {
+    onSelectCategory(categoryId);
   };
 
   return (
@@ -22,7 +25,7 @@ export default function ExploreCategories() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {categories.map((cat) => (
             <div
               key={cat.id}
@@ -58,7 +61,7 @@ export default function ExploreCategories() {
                   ))}
                 </div>
                 <button
-                  onClick={handleExplore}
+                  onClick={() => handleExplore(cat.id)}
                   className="inline-flex items-center gap-2 text-gold font-semibold text-sm hover:gap-3 transition-all duration-200"
                 >
                   Explore {cat.title}

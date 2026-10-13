@@ -31,9 +31,10 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2">
               {[
-                { label: 'Explore', target: 'explore' },
+                { label: 'Plan Your Trip', target: 'explore' },
                 { label: 'Historical Heritage', target: 'historical-heritage' },
                 { label: 'Musical Heritage', target: 'musical-heritage' },
+                { label: 'Scenic Places', target: 'spiritual-scenic' },
                 { label: 'About Us', target: 'about' },
               ].map((link) => (
                 <li key={link.target}>
@@ -61,7 +62,7 @@ export default function Footer() {
             </p>
             <p className="text-sm">
               <span className="text-cream/50">Event:</span> AI Synergy Hackathon
-              2026
+              2026, IIIT Gwalior
             </p>
           </div>
         </div>
@@ -81,7 +82,7 @@ export default function Footer() {
           </div>
           <p className="text-xs text-cream/40 text-center">
             &copy; {new Date().getFullYear()} Explore Gwalior — Beyond the Fort.
-            Built by Team FRESH STACK for AI Synergy Hackathon 2026.
+            Built by Team FRESH STACK for AI Synergy Hackathon 2026, IIIT Gwalior.
           </p>
         </div>
       </div>
