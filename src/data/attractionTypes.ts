@@ -52,6 +52,7 @@ export interface ItineraryStop {
   durationLabel: string;
   order: number;
   uncertainty: string | null;
+  fitsTimeBudget: boolean;
 }
 
 export interface ItineraryResult {
@@ -59,4 +60,14 @@ export interface ItineraryResult {
   totalTimeLabel: string;
   summary: string;
   warnings: string[];
+  confirmedCount: number;
+  suggestionCount: number;
+}
+
+export const ORIGIN_LOCATION = 'Gwalior Railway Station';
+
+export function buildDirectionsUrl(attraction: Attraction): string {
+  const dest = encodeURIComponent(attraction.name + ' Gwalior');
+  const origin = encodeURIComponent(ORIGIN_LOCATION);
+  return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}`;
 }

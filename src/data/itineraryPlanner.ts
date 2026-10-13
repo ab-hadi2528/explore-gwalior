@@ -11,18 +11,22 @@ const interestToCategoryMap: Record<string, string[]> = {
   'Photography': ['historical-heritage', 'musical-heritage', 'spiritual-scenic'],
 };
 
-const durationMinutes: Record<string, number> = {
-  '30-45 minutes (planning estimate)': 38,
-  '45-60 minutes if open (estimate)': 53,
-  '1-1.5 hours (planning estimate)': 75,
-  '1.5-2 hours': 105,
-  '2-3 hours (planning estimate)': 150,
+const durationMinutes: Record<string, number | null> = {
   '3-4 hours for the main fort complex. Sound and Light Show requires additional evening time.': 210,
+  '1.5-2 hours': 105,
+  '1-1.5 hours (planning estimate)': 75,
+  '2-3 hours (planning estimate)': 150,
+  '45-60 minutes if open (estimate)': 53,
+  '30-45 minutes (planning estimate)': 38,
 };
 
 function parseTimeLimit(time: string): number {
   const match = time.match(/(\d+)/);
   return match ? parseInt(match[1], 10) : 4;
+}
+
+function getDurationMinutes(attraction: Attraction): number | null {
+  return durationMinutes[attraction.suggestedDuration] ?? null;
 }
 
 function attractionMatchesInterests(attraction: Attraction, interests: string[]): boolean {
@@ -40,22 +44,17 @@ function attractionMatchesInterests(attraction: Attraction, interests: string[])
 }
 
 function reasonForAttraction(attraction: Attraction, interests: string[]): string {
-  const reasons: string[] = [];
-  if (interests.length > 0) {
-    const matched = interests.filter((interest) => {
-      const cats = interestToCategoryMap[interest];
-      return cats?.includes(attraction.category) ||
-        attraction.visitorInterests.some((vi) =>
-          vi.toLowerCase().includes(interest.toLowerCase()) ||
-          interest.toLowerCase().includes(vi.toLowerCase())
-        );
-    });
-    if (matched.length > 0) {
-      reasons.push(`Matches your interest in ${matched.join(', ')}`);
-    }
-  }
-  if (reasons.length === 0) reasons.push('A notable Gwalior attraction worth visiting');
-  return reasons.join('; ');
+  if (interests.length === 0) return 'A notable Gwalior attraction worth visiting.';
+  const matched = interests.filter((interest) => {
+    const cats = interestToCategoryMap[interest];
+    return cats?.includes(attraction.category) ||
+      attraction.visitorInterests.some((vi) =>
+        vi.toLowerCase().includes(interest.toLowerCase()) ||
+        interest.toLowerCase().includes(vi.toLowerCase())
+      );
+  });
+  if (matched.length > 0) return `Recommended because you selected ${matched.join(', ')}.`;
+  return 'A notable Gwalior attraction worth visiting.';
 }
 
 function uncertaintyForAttraction(attraction: Attraction): string | null {
@@ -74,7 +73,7 @@ function uncertaintyForAttraction(attraction: Attraction): string | null {
 
 export function generateItinerary(
   attractions: Attraction[],
-  startingLocation: string,
+  _startingLocation: string,
   timeLimit: string,
   interests: string[]
 ): ItineraryResult {
@@ -89,35 +88,43 @@ export function generateItinerary(
     warnings.push('No attractions directly matched your selected interests. Showing a general selection of Gwalior attractions.');
   }
 
-  const startingMatch = pool.find((a) =>
-    a.name.toLowerCase().includes(startingLocation.toLowerCase()) ||
-    startingLocation.toLowerCase().includes(a.name.toLowerCase().replace("'s tomb", '').replace(', gwalior', ''))
-  );
-
-  let ordered: Attraction[];
-  if (startingMatch) {
-    ordered = [startingMatch, ...pool.filter((a) => a.id !== startingMatch.id)];
-  } else {
-    ordered = [...pool];
-  }
-
   const stops: ItineraryStop[] = [];
   let accumulatedMinutes = 0;
+  let confirmedCount = 0;
   let order = 1;
 
-  for (const attraction of ordered) {
-    const dur = durationMinutes[attraction.suggestedDuration] ?? 60;
-    if (accumulatedMinutes + dur > totalMinutes && stops.length > 0) {
-      warnings.push(`The ${timeLimit} time limit was reached. ${attraction.name} and other attractions were not included to respect your time constraint.`);
-      break;
+  for (const attraction of pool) {
+    const dur = getDurationMinutes(attraction);
+    let fitsTimeBudget = false;
+
+    if (dur !== null && accumulatedMinutes + dur <= totalMinutes) {
+      accumulatedMinutes += dur;
+      fitsTimeBudget = true;
+      confirmedCount++;
     }
-    accumulatedMinutes += dur;
+
+    const durLabel = dur !== null
+      ? attraction.suggestedDuration
+      : `${attraction.suggestedDuration} (duration estimate only — cannot confirm fit)`;
+
+    const uncertainty = uncertaintyForAttraction(attraction);
+    let stopUncertainty = uncertainty;
+    if (!fitsTimeBudget && dur !== null) {
+      stopUncertainty = (stopUncertainty ? stopUncertainty + '. ' : '') +
+        `Does not fit within ${timeLimit} based on estimated visit duration.`;
+    }
+    if (dur === null) {
+      stopUncertainty = (stopUncertainty ? stopUncertainty + '. ' : '') +
+        'Visit duration unknown — cannot confirm whether this fits your available time.';
+    }
+
     stops.push({
       attraction,
       reason: reasonForAttraction(attraction, interests),
-      durationLabel: attraction.suggestedDuration,
+      durationLabel: durLabel,
       order,
-      uncertainty: uncertaintyForAttraction(attraction),
+      uncertainty: stopUncertainty,
+      fitsTimeBudget,
     });
     order++;
   }
@@ -128,23 +135,32 @@ export function generateItinerary(
       totalTimeLabel: '0 hours',
       summary: 'No itinerary could be generated. Please try different options.',
       warnings: ['No attractions could be selected for the given criteria.'],
+      confirmedCount: 0,
+      suggestionCount: 0,
     };
   }
 
   const hours = Math.floor(accumulatedMinutes / 60);
   const mins = accumulatedMinutes % 60;
   const totalTimeLabel = mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  const suggestionCount = stops.length - confirmedCount;
 
-  const summary = stops.length === 1
-    ? `1 attraction selected for your ${timeLimit} visit starting from ${startingLocation}.`
-    : `${stops.length} attractions selected for your ${timeLimit} visit starting from ${startingLocation}.`;
+  const parts: string[] = [`${stops.length} attraction(s) match your criteria`];
+  if (confirmedCount > 0) {
+    parts.push(`${confirmedCount} confirmed for your ${timeLimit} visit`);
+  }
+  if (suggestionCount > 0) {
+    parts.push(`${suggestionCount} additional suggestion(s) that may not fit the time budget`);
+  }
+  parts.push(`starting from Gwalior Railway Station.`);
+  const summary = parts.join(', ');
 
   const unverifiedTimingsCount = stops.filter((s) => s.uncertainty && s.uncertainty.includes('Opening hours')).length;
   if (unverifiedTimingsCount > 0) {
-    warnings.push(`${unverifiedTimingsCount} attraction(s) in this itinerary have unverified opening hours. Please confirm before visiting.`);
+    warnings.push(`${unverifiedTimingsCount} attraction(s) have unverified opening hours. Please confirm before visiting.`);
   }
 
-  warnings.push('Travel times between attractions are not calculated. Use the Google Maps directions links to estimate travel time.');
+  warnings.push('Travel times from Gwalior Railway Station are not calculated. Use the Google Maps directions links to estimate travel time. Itinerary feasibility has not been verified against actual travel times.');
 
-  return { stops, totalTimeLabel, summary, warnings };
+  return { stops, totalTimeLabel, summary, warnings, confirmedCount, suggestionCount };
 }

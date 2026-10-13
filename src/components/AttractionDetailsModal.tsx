@@ -1,6 +1,7 @@
 import { X, MapPin, Clock, Ticket, Globe, UtensilsCrossed, Building, FileText, CheckCircle2, AlertCircle, AlertTriangle, ExternalLink, Navigation, Car, Hotel, Clock3, Sparkles, Calendar, Info } from 'lucide-react';
 import AttractionImage from '@/components/AttractionImage';
 import type { Attraction } from '@/data/attractionTypes';
+import { buildDirectionsUrl, ORIGIN_LOCATION } from '@/data/attractionTypes';
 
 interface Props { attraction: Attraction | null; onClose: () => void; }
 
@@ -52,35 +53,6 @@ export default function AttractionDetailsModal({ attraction, onClose }: Props) {
       </div>
 
       <div className="p-6 sm:p-8">
-        {/* Verification status badge */}
-        <span className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border bg-amber-100 text-amber-900 border-amber-200 mb-5">
-          <AlertCircle size={18} />{attraction.verificationStatus}
-        </span>
-
-        {/* Warning banner */}
-        {attraction.warning && (
-          <div className="mb-5 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex gap-3">
-            <AlertTriangle size={20} className="text-red-600 flex-shrink-0" />
-            <div><p className="text-red-800 text-sm font-semibold">Important warning</p><p className="text-red-700 text-sm mt-1">{attraction.warning}</p></div>
-          </div>
-        )}
-
-        {/* Timing conflict banner */}
-        {timingConflict && (
-          <div className="mb-5 bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 flex gap-3">
-            <AlertTriangle size={20} className="text-orange-600 flex-shrink-0" />
-            <div><p className="text-orange-800 text-sm font-semibold">Conflicting timing information</p><p className="text-orange-700 text-sm mt-1">{attraction.timings.status}</p></div>
-          </div>
-        )}
-
-        {/* Potentially closed banner */}
-        {isPotentiallyClosed && (
-          <div className="mb-5 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex gap-3">
-            <AlertTriangle size={20} className="text-red-600 flex-shrink-0" />
-            <div><p className="text-red-800 text-sm font-semibold">Potentially closed</p><p className="text-red-700 text-sm mt-1">Please confirm that this attraction is open before visiting.</p></div>
-          </div>
-        )}
-
         {/* Short description */}
         <p className="text-[#1b2a4a]/80 text-sm leading-relaxed mb-5">{attraction.shortDescription}</p>
 
@@ -101,7 +73,7 @@ export default function AttractionDetailsModal({ attraction, onClose }: Props) {
           <h3 className="text-[#1b2a4a] font-bold text-sm uppercase tracking-wide mb-3">Maps & Directions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <MapButton href={attraction.mapsSearchUrl} icon={<MapPin size={16} />} label="Open in Google Maps" variant="primary" />
-            <MapButton href={attraction.directionsUrl} icon={<Navigation size={16} />} label="Get Directions" variant="primary" />
+            <MapButton href={buildDirectionsUrl(attraction)} icon={<Navigation size={16} />} label={`Directions from ${ORIGIN_LOCATION}`} variant="primary" />
             <MapButton href={attraction.nearbyRestaurants.url} icon={<UtensilsCrossed size={16} />} label="Find Nearby Restaurants" variant="secondary" />
             <MapButton href={attraction.nearbyHotels.url} icon={<Hotel size={16} />} label="Find Nearby Hotels" variant="secondary" />
             <MapButton href={attraction.parkingUrl} icon={<Car size={16} />} label="Find Parking" variant="secondary" />
@@ -160,11 +132,46 @@ export default function AttractionDetailsModal({ attraction, onClose }: Props) {
           </div>
         )}
 
-        <div className="bg-white rounded-xl p-5 border border-sandstone/20 mb-5">
-          <DetailRow icon={<Building size={18} />} label="Facilities status" value={attraction.facilitiesStatus} />
-          <DetailRow icon={<Info size={18} />} label="Verification notes" value={attraction.verificationNotes} />
-          <SourceLinks sources={attraction.sourceUrls} />
-          <DetailRow icon={<CheckCircle2 size={18} />} label="Last verified" value={attraction.lastVerified} />
+        {/* ===== WARNINGS & VERIFICATION (moved to bottom) ===== */}
+        <div className="space-y-4 mb-5">
+          <h3 className="text-[#1b2a4a] font-bold text-sm uppercase tracking-wide">Verification & Warnings</h3>
+
+          {/* Verification status badge */}
+          <span className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full border bg-amber-100 text-amber-900 border-amber-200">
+            <AlertCircle size={18} />{attraction.verificationStatus}
+          </span>
+
+          {/* Warning banner */}
+          {attraction.warning && (
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex gap-3">
+              <AlertTriangle size={20} className="text-red-600 flex-shrink-0" />
+              <div><p className="text-red-800 text-sm font-semibold">Important warning</p><p className="text-red-700 text-sm mt-1">{attraction.warning}</p></div>
+            </div>
+          )}
+
+          {/* Timing conflict banner */}
+          {timingConflict && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 flex gap-3">
+              <AlertTriangle size={20} className="text-orange-600 flex-shrink-0" />
+              <div><p className="text-orange-800 text-sm font-semibold">Conflicting timing information</p><p className="text-orange-700 text-sm mt-1">{attraction.timings.status}</p></div>
+            </div>
+          )}
+
+          {/* Potentially closed banner */}
+          {isPotentiallyClosed && (
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex gap-3">
+              <AlertTriangle size={20} className="text-red-600 flex-shrink-0" />
+              <div><p className="text-red-800 text-sm font-semibold">Potentially closed</p><p className="text-red-700 text-sm mt-1">Please confirm that this attraction is open before visiting.</p></div>
+            </div>
+          )}
+
+          {/* Verification details */}
+          <div className="bg-white rounded-xl p-5 border border-sandstone/20">
+            <DetailRow icon={<Building size={18} />} label="Facilities status" value={attraction.facilitiesStatus} />
+            <DetailRow icon={<Info size={18} />} label="Verification notes" value={attraction.verificationNotes} />
+            <SourceLinks sources={attraction.sourceUrls} />
+            <DetailRow icon={<CheckCircle2 size={18} />} label="Last verified" value={attraction.lastVerified} />
+          </div>
         </div>
 
         <button onClick={onClose} className="mt-2 w-full bg-[#1b2a4a] hover:bg-[#243760] text-cream font-semibold px-6 py-3 rounded-xl text-sm">Close</button>
