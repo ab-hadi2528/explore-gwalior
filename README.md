@@ -38,6 +38,15 @@ The prototype may contain incomplete tourism information. Visitors should confir
 
 The project is a prototype and does not provide automated ticket booking or guaranteed travel itineraries.
 
+### Known Prototype Limitations
+
+- **Itinerary suggestions:** The planner matches attractions to the selected interests, but its time-budget check is not yet working correctly, so all results appear as "Additional Suggestions". Travel times are not calculated.
+- **Starting location:** Used for the directions links only. It does not yet change which attractions are suggested or their order.
+- **Report form:** A UI demo. Submissions are not sent or stored.
+- **Data:** Nine hardcoded attractions, none fully verified. No audio or media content yet.
+- **Backend:** None. The site is front-end only and stores no visitor data.
+  
 Purpose
 
 This project was developed as a proposed solution to the tourism discovery problem in the Beyond the Fort problem space.
+
